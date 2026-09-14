@@ -27,7 +27,25 @@ class AppointmentApp extends StatelessWidget {
       title: 'Clinic Appointments',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2563EB)),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0F766E),
+          surface: const Color(0xFFF7FAF9),
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF1F5F4),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF0F766E),
+          foregroundColor: Colors.white,
+        ),
+        cardTheme: const CardThemeData(
+          elevation: 0,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+        ),
         useMaterial3: true,
       ),
       home: AppConfig.isConfigured

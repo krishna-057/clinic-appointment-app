@@ -7,6 +7,11 @@ abstract interface class AppointmentRepository {
 
   Future<List<Appointment>> getAppointments();
 
+  Future<Set<String>> getReservedStartTimes({
+    required String doctorId,
+    required DateTime date,
+  });
+
   Future<void> createAppointment({
     required String patientName,
     required String mobileNumber,
@@ -23,4 +28,12 @@ abstract interface class AppointmentRepository {
   });
 
   Future<void> deleteAppointment(String appointmentId);
+}
+
+class AppointmentConflictException implements Exception {
+  const AppointmentConflictException();
+
+  @override
+  String toString() =>
+      'This slot was just booked by someone else. Please choose another time.';
 }

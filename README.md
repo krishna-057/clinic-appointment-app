@@ -10,7 +10,7 @@ particular focus on the staff workflow at
 
 ## Current milestone
 
-The repository currently contains the working technical foundation:
+The repository contains a working end-to-end appointment workflow:
 
 - Flutter applications for Android and Web
 - Supabase initialization through build-time configuration
@@ -19,11 +19,14 @@ The repository currently contains the working technical foundation:
 - Seeded doctor and specialization data
 - Row Level Security policies for the no-login demo
 - Domain models, repository abstraction, and Riverpod ViewModel
-- Live doctor loading with loading, success, retry, and error states
-- Installable Android prerelease APK
-
-The booking form and appointment action screens are the next development
-milestone. They are described under **Roadmap** and are not claimed as complete.
+- Appointment form with patient name, Indian mobile validation, doctor, date,
+  available time, and optional description
+- Live appointment list with status, search, filters, and expandable details
+- Completed, Cancelled, and Delete actions with confirmation and feedback
+- Database-backed persistence across app restarts and page refreshes
+- Responsive phone, tablet, and web layout
+- Loading, empty, success, retry, validation, and database error states
+- Unit-tested scheduling rules and an installable Android APK
 
 ## Why this fits Clinic Living Plus
 
@@ -189,7 +192,8 @@ build/app/outputs/flutter-apk/app-release.apk
 
 ## Install the APK
 
-1. Download the APK from the repository's prerelease page.
+1. Download the APK from the repository's
+   [Releases page](https://github.com/krishna-057/clinic-appointment-app/releases).
 2. Transfer it to an Android device if downloaded elsewhere.
 3. Open the APK on the device.
 4. Allow installation from that source if Android asks.
@@ -216,15 +220,8 @@ Before production use:
 
 ## Roadmap
 
-- Appointment form with Indian mobile-number validation
-- Existing-patient search and reuse
-- Free-slot calculation and passed-time filtering
-- Responsive Today, Upcoming, Completed, Cancelled, and All views
-- Patient/mobile search
 - Edit and reschedule using only available slots
-- Complete, cancel, and delete confirmation flows
-- Expandable description and cancellation reason
-- Unit and widget tests
+- More widget and integration tests
 - Optional voice-assisted form filling with staff confirmation
 - Staff authentication and production-grade RLS
 
@@ -245,12 +242,13 @@ review and submit the appointment. AI would never create a booking silently.
 lib/
   core/config/                       build-time configuration
   features/appointments/
-    domain/                          application models
+    domain/                          models and scheduling rules
     data/                            repository contract and Supabase adapter
     presentation/providers/         Riverpod ViewModel and providers
     presentation/screens/           Flutter screens
 supabase/migrations/                 versioned database changes
 config/dev.example.json              safe configuration template
+test/                                scheduling unit tests
 ```
 
 ## License and data

@@ -1,91 +1,68 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/appointment_providers.dart';
+import '../widgets/appointment_form.dart';
+import '../widgets/appointment_list.dart';
 
-class AppointmentDashboard extends ConsumerWidget {
+class AppointmentDashboard extends StatelessWidget {
   const AppointmentDashboard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final doctors = ref.watch(doctorsProvider);
-
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Clinic Appointments')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Database connection check',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                const Text('Doctors below are loaded directly from Supabase.'),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: doctors.when(
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, stackTrace) => _ConnectionError(
-                      message: error.toString(),
-                      onRetry: () => ref.invalidate(doctorsProvider),
-                    ),
-                    data: (items) => ListView.separated(
-                      itemCount: items.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final doctor = items[index];
-                        return Card(
-                          child: ListTile(
-                            leading: const CircleAvatar(
-                              child: Icon(Icons.medical_services_outlined),
-                            ),
-                            title: Text(doctor.name),
-                            subtitle: Text(doctor.specialization),
+      appBar: AppBar(
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Clinic Appointments'),
+            Text(
+              'Staff booking desk',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+            ),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 920;
+
+            if (isWide) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1400),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: const [
+                        SizedBox(
+                          width: 430,
+                          child: SingleChildScrollView(
+                            child: AppointmentForm(),
                           ),
-                        );
-                      },
+                        ),
+                        SizedBox(width: 20),
+                        Expanded(child: AppointmentList()),
+                      ],
                     ),
                   ),
                 ),
+              );
+            }
+
+            return ListView(
+              padding: const EdgeInsets.all(14),
+              children: [
+                const AppointmentForm(),
+                const SizedBox(height: 14),
+                SizedBox(
+                  height: constraints.maxHeight.clamp(520, 760),
+                  child: const AppointmentList(),
+                ),
               ],
-            ),
-          ),
+            );
+          },
         ),
-      ),
-    );
-  }
-}
-
-class _ConnectionError extends StatelessWidget {
-  const _ConnectionError({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.cloud_off_outlined, size: 48),
-          const SizedBox(height: 12),
-          const Text('Could not load doctors'),
-          const SizedBox(height: 8),
-          Text(message, textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
-          ),
-        ],
       ),
     );
   }

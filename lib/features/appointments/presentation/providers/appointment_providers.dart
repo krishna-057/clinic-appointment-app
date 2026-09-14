@@ -15,6 +15,17 @@ final doctorsProvider = FutureProvider<List<Doctor>>((ref) {
   return ref.watch(appointmentRepositoryProvider).getDoctors();
 });
 
+typedef SlotRequest = ({String doctorId, DateTime date});
+
+final reservedSlotsProvider = FutureProvider.family<Set<String>, SlotRequest>((
+  ref,
+  request,
+) {
+  return ref
+      .watch(appointmentRepositoryProvider)
+      .getReservedStartTimes(doctorId: request.doctorId, date: request.date);
+});
+
 final appointmentsProvider =
     AsyncNotifierProvider<AppointmentsViewModel, List<Appointment>>(
       AppointmentsViewModel.new,
@@ -27,7 +38,7 @@ class AppointmentsViewModel extends AsyncNotifier<List<Appointment>> {
   @override
   Future<List<Appointment>> build() => _repository.getAppointments();
 
-  Future<bool> createAppointment({
+  Future<void> createAppointment({
     required String patientName,
     required String mobileNumber,
     required String doctorId,
@@ -35,22 +46,17 @@ class AppointmentsViewModel extends AsyncNotifier<List<Appointment>> {
     required String startTime,
     String? description,
   }) async {
-    try {
-      await _repository.createAppointment(
-        patientName: patientName,
-        mobileNumber: mobileNumber,
-        doctorId: doctorId,
-        date: date,
-        startTime: startTime,
-        description: description,
-      );
-      ref.invalidateSelf();
-      await future;
-      return true;
-    } catch (error, stackTrace) {
-      state = AsyncError(error, stackTrace);
-      return false;
-    }
+    await _repository.createAppointment(
+      patientName: patientName,
+      mobileNumber: mobileNumber,
+      doctorId: doctorId,
+      date: date,
+      startTime: startTime,
+      description: description,
+    );
+    ref.invalidate(reservedSlotsProvider);
+    ref.invalidateSelf();
+    await future;
   }
 
   Future<void> updateStatus({
@@ -63,11 +69,15 @@ class AppointmentsViewModel extends AsyncNotifier<List<Appointment>> {
       status: status,
       cancellationReason: cancellationReason,
     );
+    ref.invalidate(reservedSlotsProvider);
     ref.invalidateSelf();
+    await future;
   }
 
   Future<void> deleteAppointment(String appointmentId) async {
     await _repository.deleteAppointment(appointmentId);
+    ref.invalidate(reservedSlotsProvider);
     ref.invalidateSelf();
+    await future;
   }
 }

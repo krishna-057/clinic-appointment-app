@@ -34,6 +34,21 @@ class SupabaseAppointmentRepository implements AppointmentRepository {
   }
 
   @override
+  Future<Set<String>> getReservedStartTimes({
+    required String doctorId,
+    required DateTime date,
+  }) async {
+    final rows = await _client
+        .from('appointments')
+        .select('start_time')
+        .eq('doctor_id', doctorId)
+        .eq('appointment_date', DateFormat('yyyy-MM-dd').format(date))
+        .eq('status', AppointmentStatus.scheduled.name);
+
+    return rows.map((row) => row['start_time'] as String).toSet();
+  }
+
+  @override
   Future<void> createAppointment({
     required String patientName,
     required String mobileNumber,
@@ -61,15 +76,22 @@ class SupabaseAppointmentRepository implements AppointmentRepository {
       patientId = existingPatients.first['id'] as String;
     }
 
-    await _client.from('appointments').insert({
-      'patient_id': patientId,
-      'doctor_id': doctorId,
-      'appointment_date': DateFormat('yyyy-MM-dd').format(date),
-      'start_time': startTime,
-      'description': description?.trim().isEmpty ?? true
-          ? null
-          : description!.trim(),
-    });
+    try {
+      await _client.from('appointments').insert({
+        'patient_id': patientId,
+        'doctor_id': doctorId,
+        'appointment_date': DateFormat('yyyy-MM-dd').format(date),
+        'start_time': startTime,
+        'description': description?.trim().isEmpty ?? true
+            ? null
+            : description!.trim(),
+      });
+    } on PostgrestException catch (error) {
+      if (error.code == '23505') {
+        throw const AppointmentConflictException();
+      }
+      rethrow;
+    }
   }
 
   @override
